@@ -24,15 +24,47 @@ struct list_head *q_new()
 /* Free all storage used by queue */
 void q_free(struct list_head *l) {}
 
+static element_t *ele_malloc(const char *s)
+{
+    element_t *ele = malloc(sizeof(element_t));
+    if (!ele)
+        return NULL;
+    
+    int s_len = sizeof(char) * strlen(s) + 1;
+    ele->value = malloc(s_len);
+    if (!ele->value) {
+        free(ele);
+        return NULL;
+    }
+    strncpy(ele->value, s, s_len);
+    return ele;
+}
+
 /* Insert an element at head of queue */
 bool q_insert_head(struct list_head *head, char *s)
-{
+{   
+    if (!head)
+        return false;
+
+    element_t *ele = ele_malloc(s);
+    if (!ele)
+        return false;
+
+    list_add(&(ele->list), head);
     return true;
 }
 
 /* Insert an element at tail of queue */
 bool q_insert_tail(struct list_head *head, char *s)
 {
+    if (!head)
+        return false;
+
+    element_t *ele = ele_malloc(s);
+    if (!ele)
+        return false;
+
+    list_add_tail(&(ele->list), head);
     return true;
 }
 
