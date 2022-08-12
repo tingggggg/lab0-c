@@ -10,6 +10,7 @@
  *   cppcheck-suppress nullPointer
  */
 
+#define min(x, y) ((x) < (y) ? (x) : (y))
 
 /* Create an empty queue */
 struct list_head *q_new()
@@ -70,14 +71,45 @@ bool q_insert_tail(struct list_head *head, char *s)
 
 /* Remove an element from head of queue */
 element_t *q_remove_head(struct list_head *head, char *sp, size_t bufsize)
-{
-    return NULL;
+{   
+    element_t *node = NULL;
+    if (!head || list_empty(head))
+        return node;
+
+    node = list_first_entry(head, element_t, list);
+    list_del(&(node->list));
+
+    if (sp) {
+        int len = strlen(node->value) + 1;
+        len = min(bufsize, len);
+        strncpy(sp, node->value, len);
+        sp[len - 1] = '\0';
+    }
+    return node;
 }
 
-/* Remove an element from tail of queue */
+/* Remove an element from tail of queue 
+* Return target element.
+* Return NULL if queue is NULL or empty.
+* If sp is non-NULL and an element is removed, copy the removed string to *sp
+* (up to a maximum of bufszie characters, plus a null terminator.)
+*/
 element_t *q_remove_tail(struct list_head *head, char *sp, size_t bufsize)
 {
-    return NULL;
+    element_t *node = NULL;
+    if (!head || list_empty(head))
+        return node;
+    
+    node = list_last_entry(head, element_t, list);
+    list_del(&(node->list));
+
+    if (sp) {
+        int len = strlen(node->value) + 1;
+        len = min(len, bufsize);
+        strncpy(sp, node->value, len);
+        sp[len - 1] = '\0';
+    }
+    return node;
 }
 
 /* Return number of elements in queue */
