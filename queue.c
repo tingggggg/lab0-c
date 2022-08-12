@@ -130,13 +130,52 @@ int q_size(struct list_head *head)
 bool q_delete_mid(struct list_head *head)
 {
     // https://leetcode.com/problems/delete-the-middle-node-of-a-linked-list/
+    if (!head || list_empty(head))
+        return false;
+    struct list_head *front, *back;
+    front = head->next;
+    back = head->prev;
+    while (front != back && front->next != back) {
+        front = front->next;
+        back = back->prev;
+    }
+
+    element_t *node = list_entry(back, element_t, list);
+    list_del(back);
+    q_release_element(node);
     return true;
 }
 
-/* Delete all nodes that have duplicate string */
+/* Delete all nodes that have duplicate string 
+* Node: this function always be called after sorting, in other words,
+* list is guranteed to be sorted in ascending order.
+*/
 bool q_delete_dup(struct list_head *head)
 {
     // https://leetcode.com/problems/remove-duplicates-from-sorted-list-ii/
+    if (!head || list_empty(head))
+        return false;
+    if (head->prev == head->next)
+        return true;
+    struct list_head **indir = &head->next;
+    while (*indir != head && (*indir)->next != head) {
+        char *a = list_entry(*indir, element_t, list)-> value;
+        char *b = list_entry((*indir)->next, element_t, list)->value;
+        if (strcmp(a, b) == 0) {
+            struct list_head *tmp = (*indir)->next;
+            do {
+                list_del(tmp);
+                q_release_element(list_entry(tmp, element_t, list));
+                tmp = (*indir)->next;
+            } while (tmp != head &&
+                     strcmp(a, list_entry(tmp, element_t, list)->value) == 0);
+            tmp = *indir;
+            list_del(tmp);
+            q_release_element(list_entry(tmp, element_t, list));        
+        } else {
+            indir = &(*indir)->next;
+        }
+    }
     return true;
 }
 
