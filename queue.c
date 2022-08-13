@@ -23,7 +23,17 @@ struct list_head *q_new()
 }
 
 /* Free all storage used by queue */
-void q_free(struct list_head *l) {}
+void q_free(struct list_head *l) 
+{
+    if (!l)
+        return;
+    element_t *curr, *safe;
+    list_for_each_entry_safe(curr, safe, l, list) {
+        list_del(&(curr->list));
+        q_release_element(curr);
+    }
+    free(l);
+}
 
 static element_t *ele_malloc(const char *s)
 {
