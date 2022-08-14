@@ -255,6 +255,7 @@ static void merge_list(struct list_head *l1,
     if (cnt == 1) {
         while (ptr->next != (*phead))
             ptr = ptr->next;
+        (*phead)->prev = ptr;
     }
 }
 
@@ -287,6 +288,9 @@ static struct list_head *mergesort_list(struct list_head *node,
 /* Sort elements of queue in ascending order */
 void q_sort(struct list_head *head) 
 {
+    if (!head || list_empty(head) || list_is_singular(head))
+        return;
+
     size_t cnt = 0;
     struct list_head **phead = &head;
     (*phead)->next = mergesort_list((*phead)->next, phead, cnt);
