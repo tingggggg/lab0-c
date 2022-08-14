@@ -215,7 +215,80 @@ void q_swap(struct list_head *head)
 }
 
 /* Reverse elements in queue */
-void q_reverse(struct list_head *head) {}
+void q_reverse(struct list_head *head) 
+{
+    if (!head || list_empty(head) || head->next == head->prev)
+        return;
+    struct list_head *curr = head;
+    do {
+        struct list_head *tmp = curr->next;
+        curr->next = curr->prev;
+        curr->prev = tmp;
+        curr = curr->prev;
+    } while (curr != head);
+}
+
+static void merge_list(struct list_head *l1,
+                       struct list_head *l2,
+                       struct list_head **phead,
+                       size_t cnt)
+{
+    struct list_head *ptr = *phead;
+
+    while (l1 != *phead && l2 != *phead) {
+        if (strcmp(list_entry(l1, element_t, list)->value,
+                   list_entry(l2, element_t, list)->value) <= 0) {
+            ptr->next = l1;
+            l1->prev = ptr;
+            l1 = l1->next;
+        } else {
+            ptr->next = l2;
+            l2->prev = ptr;
+            l2 = l2->next;
+        }
+        ptr = ptr->next;
+    }
+
+    ptr->next = (l1 != (*phead)) ? l1 : l2;
+    ptr->next->prev = ptr;
+
+    if (cnt == 1) {
+        while (ptr->next != (*phead))
+            ptr = ptr->next;
+    }
+}
+
+static struct list_head *mergesort_list(struct list_head *node,
+                                        struct list_head **phead,
+                                        size_t cnt)
+{
+    if (!(*phead) || node->next == *phead)
+        return node;
+
+    struct list_head *left, *right;
+    struct list_head *slow = node;
+    struct list_head *fast = node->next->next;
+    struct list_head *mid = NULL;
+    while (fast != *phead && fast->next != *phead) {
+        slow = slow->next;
+        fast = fast->next->next;
+    }
+
+    mid = slow->next;
+    slow->next = *phead;
+
+    cnt++;
+    left = mergesort_list(node, phead, cnt);
+    right = mergesort_list(mid, phead, cnt);
+    merge_list(left, right, phead, cnt);
+    return (*phead)->next;
+}
 
 /* Sort elements of queue in ascending order */
-void q_sort(struct list_head *head) {}
+void q_sort(struct list_head *head) 
+{
+    size_t cnt = 0;
+    struct list_head **phead = &head;
+    (*phead)->next = mergesort_list((*phead)->next, phead, cnt);
+    (*phead)->next->prev = (*phead);
+}
